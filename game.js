@@ -2,7 +2,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-01.jpg",
-        beacon: "1y"
+        beacon1y: 1
     },
     {
         location: 0,
@@ -24,7 +24,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-05.jpg",
-        beacon: "2x"
+        beacon2x: 1
     },
     {
         location: 0,
@@ -51,7 +51,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-10.jpg",
-        beacon: "3y"
+        beacon3y: 1
     },
     {
         location: 0,
@@ -77,7 +77,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-15.jpg",
-        beacon: "1x"
+        beacon1x: 1
     },
     {
         location: 0,
@@ -103,7 +103,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-20.jpg",
-        beacon: "2y"
+        beacon2y: 1
     },
     {
         location: 0,
@@ -145,7 +145,7 @@ const mapDeck = [{
         location: 0,
         front: "images/maptile-front.jpg",
         back: "images/maptile-28.jpg",
-        beacon: "3x"
+        beacon3x: 1
     },
     {
         location: 0,
@@ -163,72 +163,90 @@ const eventDeck = [{
         id: 1,
         type: 1,
         title: "Crater Shadow",
+        text: "text",  
         cardFace: "link",
-        effect: "Battery -1",
+        oxygenEffect: 0, 
+        batteryEffect: -1,
         importance: 1
     },
     {
         id: 2,
         type: 1,
         title: "Crater Shadow",
+        text: "text",
         cardFace: "link",
-        effect: "Battery -1",
+        oxygenEffect: 0, 
+        batteryEffect: -1,
         importance: 9
     },
     {
         id: 3,
         type: 1,
         title: "Rough Terrain",
+        text: "text",
         cardFace: "link",
-        effect: "Oxygen -2",
+        oxygenEffect: -2, 
+        batteryEffect: 0,
         importance: 8
     },
     {
         id: 4,
         type: 1,
         title: "Rough Terrain",
+        text: "text",
         cardFace: "link",
-        effect: "Oxygen -1",
+        oxygenEffect: -1, 
+        batteryEffect: 0,
         importance: 2
     },
     {
         id: 5,
         type: 1,
         title: "Meteor Strike",
+        text: "text",
         cardFace: "link",
-        effect: "Oxygen -1",
+        oxygenEffect: -1, 
+        batteryEffect: 0,
         importance: 4
     },
     {
         id: 6,
         type: 1,
         title: "Static Charge",
+        text: "text",
         cardFace: "link",
-        effect: "Battery -1",
+        oxygenEffect: 0, 
+        batteryEffect: -1,
         importance: 3
     },
     {
         id: 7,
         type: 1,
         title: "Dust in Servomechs",
+        text: "text",
         cardFace: "link",
-        effect: "Battery -1",
+        oxygenEffect: 0, 
+        batteryEffect: -1,
         importance: 5
     },
     {
         id: 8,
         type: 1,
         title: "Suit Overheating",
+        text: "text",
         cardFace: "link",
-        effect: "Oxygen -2",
+        oxygenEffect: -2, 
+        batteryEffect: 0,
         importance: 6
     },
     {
         id: 9,
         type: 1,
         title: "Solar Wind",
+        text: "text",
         cardFace: "link",
-        effect: "Battery -2",
+        oxygenEffect: 0, 
+        batteryEffect: -2,
         importance: 7
     },
     {
@@ -282,31 +300,14 @@ const eventDeck = [{
     }
 ];
 
-const fuelTanks = [{
-        id: 1,
-        beaconx: 0,
-        beacony: 0,
-        location: 0
-    },
-    {
-        id: 2,
-        beaconx: 0,
-        beacony: 0,
-        location: 0
-    },
-    {
-        id: 3,
-        beaconx: 0,
-        beacony: 0,
-        location: 0
-    }
-];
+const fuelTanks = {};
 
 const player = {
     id: 1,
     location: 0,
     battery: 9,
-    oxygen: 9
+    oxygen: 9,
+    fuelTanksFound: 0
 };
 
 const discardDeck = [];
@@ -319,12 +320,24 @@ const gridElement = document.querySelector(".map-grid");
 
 const playerToken = document.getElementById("player-token");
 
+const playerstatsOxygenElement = document.getElementById("playerstats-oxygen");
+const playerstatsBatteryElement = document.getElementById("playerstats-battery");
+const playerstatsFuelTanksElement = document.getElementById("playerstats-fuel-tanks");
+
+const messageTitleElement = document.getElementById("message-title");
+const messageTextElement = document.getElementById("message-text");
+const okButtonElement = document.getElementById("message-ok-button");
+const cancelButtonElement = document.getElementById("message-cancel-button");
+const oxygenButtonElement = document.getElementById("message-oxygen-button");
+const batteryButtonElement = document.getElementById("message-battery-button");
+
 function startGame() {
     shuffle(mapDeck);
     shuffle(eventDeck);
     buildGameBoard();
     findFuelTanks();
     playerStartingLocation();
+    updatePlayerStats();
     movementPhase();
 }
 
@@ -369,34 +382,37 @@ startGame();
 
 
 function findFuelTanks() {
-    //Note to self: should find a nicer way of doing this
-    //most likely a function that loops through an array of 1x 1y 2x 2y...etc
-    //forEach it finds the associated location and 
-    //creates a tank object based on that -- 3 tank objects
-    let beaconCards = mapDeck.filter(card => card.beacon);
-    let beacon1X = beaconCards.find(card => card.beacon === "1x").location;
-    let beacon1Y = beaconCards.find(card => card.beacon === "1y").location;
-    let beacon2X = beaconCards.find(card => card.beacon === "2x").location;
-    let beacon2Y = beaconCards.find(card => card.beacon === "2y").location;
-    let beacon3X = beaconCards.find(card => card.beacon === "3x").location;
-    let beacon3Y = beaconCards.find(card => card.beacon === "3y").location;
-    fuelTanks.find(tank => tank.id === 1).beaconx = beacon1X;
-    fuelTanks.find(tank => tank.id === 1).beacony = beacon1Y;
-    fuelTanks.find(tank => tank.id === 2).beaconx = beacon2X;
-    fuelTanks.find(tank => tank.id === 2).beacony = beacon2Y;
-    fuelTanks.find(tank => tank.id === 3).beaconx = beacon3X;
-    fuelTanks.find(tank => tank.id === 3).beacony = beacon3Y;
+  //Note to self-- nicer way of doing this--
+  //function that loops through an array of beacon1x, beacon1y...etc
+  fuelTanks.beacon1x = mapDeck.find(card => card.beacon1x).location;    
+  fuelTanks.beacon1y = mapDeck.find(card => card.beacon1y).location;
+  fuelTanks.beacon2x = mapDeck.find(card => card.beacon2x).location;    
+  fuelTanks.beacon2y = mapDeck.find(card => card.beacon2y).location;
+  fuelTanks.beacon3x = mapDeck.find(card => card.beacon3x).location;    
+  fuelTanks.beacon3y = mapDeck.find(card => card.beacon3y).location;
+  fuelTanks.location1 = getIntersection(fuelTanks.beacon1x,fuelTanks.beacon1y);
+  fuelTanks.location2 = getIntersection(fuelTanks.beacon2x,fuelTanks.beacon2y);
+  fuelTanks.location3 = getIntersection(fuelTanks.beacon3x,fuelTanks.beacon3y);
+}
 
-    fuelTanks.find(tank => tank.id === 1).location = (beacon1X[0] + beacon1Y[1]);
-    fuelTanks.find(tank => tank.id === 2).location = (beacon2X[0] + beacon2Y[1]);
-    fuelTanks.find(tank => tank.id === 3).location = (beacon3X[0] + beacon3Y[1]);
-    console.log(fuelTanks);
+function getIntersection(tileA,tileB) {
+    let tileAy = tileA % 10;
+    let tileAx = (tileA - tileAy) / 10;
+    let tileBy = tileB % 10;
+    let location = parseInt(tileAx.toString() + tileBy.toString());
+    return location;
 }
 
 function playerStartingLocation() {
     player.location = mapDeck.find(card => card.base === 1).location;
     let path = calculatePath(22, player.location);
     movePlayer(player.location, path);
+}
+
+function updatePlayerStats() {
+  playerstatsOxygenElement.innerText = `Oxygen: ${player.oxygen}`;
+  playerstatsBatteryElement.innerText = `Battery: ${player.battery}`;
+  playerstatsFuelTanksElement.innerText = `Fuel Tanks: ${player.fuelTanksFound}`;
 }
 
 function movementPhase() {
@@ -410,13 +426,14 @@ function movementPhase() {
 }
 
 function actionMove() {
-    let destination = this.id;
+    let destination = parseInt(this.id);
     //remove click listener from matchingCardsAction button
     //remove click listeners from all map tiles
     let path = calculatePath(player.location, destination);
     let movesNeeded = calculateMovesNeeded(path);
     if (movesNeeded < 3) {
         movePlayer(destination, path);
+        eventPhase();
     } else {
         showMessageMovesNeeded(movesNeeded, destination, path);
     }
@@ -431,10 +448,10 @@ function movePlayer(destination, path) {
     playerToken.style.transform += 'translateX(' + (moveHorizontal * 54) + 'px)';
     setTimeout( function() {
       playerToken.style.transform += 'translateY(' + (moveVertical * 54) + 'px)';
-    document.getElementById(destination).classList.add("map-tile-is-flipped");
-    player.location = destination;
-    console.log("player new location", player.location)
-    eventPhase();
+      document.getElementById(destination).classList.add("map-tile-is-flipped");
+      player.location = destination;
+      console.log("player new location", player.location);
+      
   },400);
 }
 
@@ -445,7 +462,6 @@ function calculatePath(location, destination) {
     let destx = (destination - desty) / 10;
     let moveVertical = destx - locx;
     let moveHorizontal = desty - locy;
-    console.log([moveHorizontal, moveVertical])
     return [moveHorizontal, moveVertical];
 }
 
@@ -459,20 +475,16 @@ function calculateMovesNeeded(path) {
 function showMessageMovesNeeded(movesNeeded, destination, path) {
     showMessageSection();
     //hide unnecessary buttons
-    let messageTitle = document.getElementById("message-title");
-    let messageText = document.getElementById("message-text");
-    let okButton = document.getElementById("message-ok-button");
-    let cancelButton = document.getElementById("message-cancel-button");
-    let oxygenButton = document.getElementById("message-oxygen-button");
-    let batteryButton = document.getElementById("message-battery-button");
-    cancelButton.addEventListener('click', movementPhase);
-    messageTitle.innerText = "Long Journey";
-    messageText.innerText = "That location is " + movesNeeded +
+    
+    cancelButtonElement.addEventListener('click', movementPhase);
+    messageTitleElement.innerText = "Long Journey";
+    messageTextElement.innerText = "That location is " + movesNeeded +
         " moves away. This will cost you Oxygen or Battery.";
     let counter = movesNeeded;
     //another function needs to handle player lowering own oxygen or 
     //battery values until counter is reduced to zero
-    //on OK trigger function payForTheMove(destination,movesNeeded,path)    
+    //on OK trigger function payForTheMove(destination,movesNeeded,path) 
+  //remember to include in that function after moveplayer, eventPhase();
 }
 
 function showMessageSection() {
@@ -485,17 +497,16 @@ function hideMessageSection() {
 
 function eventPhase() {
     dealEventCards();
-    if (currentEvent.length > 1) {
-        discardExcessEvents();
-    }
-    displayCurrentEvent();
 }
 
 function dealEventCards() {
-    for (i = 0; i < 3; i++) {
-        let container = eventDeck.shift();
+  let container = [];
+    for (let i = 0; i < 3; i++) {        
+      container = eventDeck.shift();
+     
         if (container.type === 1) {
             currentEvent.push(container);
+         
         } else {
             currentEquipment.push(container);
         }
@@ -503,16 +514,26 @@ function dealEventCards() {
     if (eventDeck.length < 6) { //Must always have at least 6 cards in eventDeck...
         replenishEventDeck(); //...to allow SatelliteUplink action
     }
+  handleEventCards();
+}
+
+function handleEventCards() {
+  if (currentEvent.length > 1) {
+        discardExcessEvents();
+    }
+    displayCurrentEvent();
 }
 
 function replenishEventDeck() {
-    //shuffle discardDeck
-    eventDeck.push(...discardDeck);
+  console.log("replenish is called")
+  shuffle(discardDeck);
+  eventDeck.push(...discardDeck.splice(0, discardDeck.length));
+  console.log("discardDeck after replenish", discardDeck)
 }
 
 function discardExcessEvents() {
     currentEvent.sort(function(a, b) {
-        return a.importance - b.importance
+        return a.importance - b.importance;
     });
     while (currentEvent.length > 1) {
         discardDeck.push(currentEvent.shift());
@@ -521,31 +542,36 @@ function discardExcessEvents() {
 
 function displayCurrentEvent() {
     showMessageSection();
-    //hide cancel button
+    //hide cancel button   
     let event = currentEvent[0];
-    let messageTitle = document.getElementById("message-title");
-    let messageText = document.getElementById("message-text");
-    let okButton = document.getElementById("message-ok-button");
-    okButton.addEventListener('click', displayCurrentEquipment);
-    messageTitle.innerText = "Event: " + event.title;
-    messageText.innerText = event.text;
-    event.effect; //do effects of event  
+    okButtonElement.addEventListener('click', displayCurrentEquipment);
+    messageTitleElement.innerText = "Event: " + event.title;
+    messageTextElement.innerText = event.text;
+    player.oxygen += event.oxygenEffect; 
+    player.battery += event.batteryEffect; 
+    discardCurrentEvent();
+    updatePlayerStats();
+}
+
+function discardCurrentEvent() {
+  if (currentEvent.length < 2) {
+    discardDeck.push(currentEvent[0]);
+  } else {
+    console.log("too many cards in currentevent")
+  } 
 }
 
 function displayCurrentEquipment() {
-    let messageTitle = document.getElementById("message-title");
-    let messageText = document.getElementById("message-text");
-    let okButton = document.getElementById("message-ok-button");
-    okButton.addEventListener('click', updatePlayerEquipment);
-    messageTitle.innerText = "You found new Equipment";
-    messageText.innerHTML = "";
-    for (i = 0; i < currentEquipment.length; i++) {
-        messageText.innerHTML += `<p>${currentEquipment[i].title}</p>`;
+    okButtonElement.addEventListener('click', updatePlayerEquipment);
+    messageTitleElement.innerText = "You found new Equipment";
+    messageTextElement.innerHTML = "";
+    for (let i = 0; i < currentEquipment.length; i++) {
+        messageTextElement.innerHTML += `<p>${currentEquipment[i].title}</p>`;
     }
 }
 
 function updatePlayerEquipment() {
-    for (i = 0; i < currentEquipment.length; i++) {
+    for (let i = 0; i < currentEquipment.length; i++) {
         playerEquipment.push(currentEquipment.shift());
     }
     matchingCardsCheck();
@@ -554,7 +580,8 @@ function updatePlayerEquipment() {
 function matchingCardsCheck() {
     //check if player has matching cards in playerEquipment
     //if so allow player to use them
-    //else equipmentCheck()
+    //else 
+  equipmentCheck();
 }
 
 function equipmentCheck() {
@@ -573,11 +600,12 @@ function systemsCheck() {
         console.log("You lost the game");
         endGame();
     } else {
-        endTurn()
+        endTurn();
     }
 }
 
 function endTurn() {
     turnCount++;
+  console.log(turnCount);
     movementPhase();
 }
