@@ -416,6 +416,7 @@ function updatePlayerStats() {
 }
 
 function movementPhase() {
+  turnCount++;
     //add click listener to actionMatchingCards button
     
     let possibleMoves = document.getElementsByClassName("map-tile");
@@ -433,7 +434,7 @@ function actionMove() {
     let movesNeeded = calculateMovesNeeded(path);
     if (movesNeeded < 3) {
         movePlayer(destination, path);
-        eventPhase();
+      eventPhase();
     } else {
         showMessageMovesNeeded(movesNeeded, destination, path);
     }
@@ -451,7 +452,6 @@ function movePlayer(destination, path) {
       document.getElementById(destination).classList.add("map-tile-is-flipped");
       player.location = destination;
       console.log("player new location", player.location);
-      
   },400);
 }
 
@@ -502,11 +502,9 @@ function eventPhase() {
 function dealEventCards() {
   let container = [];
     for (let i = 0; i < 3; i++) {        
-      container = eventDeck.shift();
-     
+      container = eventDeck.shift();     
         if (container.type === 1) {
-            currentEvent.push(container);
-         
+            currentEvent.push(container);         
         } else {
             currentEquipment.push(container);
         }
@@ -520,8 +518,9 @@ function dealEventCards() {
 function handleEventCards() {
   if (currentEvent.length > 1) {
         discardExcessEvents();
-    }
-    displayCurrentEvent();
+    } else {
+      displayCurrentEvent();
+    }    
 }
 
 function replenishEventDeck() {
@@ -536,8 +535,9 @@ function discardExcessEvents() {
         return a.importance - b.importance;
     });
     while (currentEvent.length > 1) {
-        discardDeck.push(currentEvent.shift());
+      discardDeck.push(currentEvent.shift());
     }
+  displayCurrentEvent();
 }
 
 function displayCurrentEvent() {
@@ -554,8 +554,10 @@ function displayCurrentEvent() {
 }
 
 function discardCurrentEvent() {
+  console.log(currentEvent)
   if (currentEvent.length < 2) {
-    discardDeck.push(currentEvent[0]);
+    discardDeck.push(currentEvent.shift());
+    console.log(currentEvent)
   } else {
     console.log("too many cards in currentevent")
   } 
@@ -605,7 +607,5 @@ function systemsCheck() {
 }
 
 function endTurn() {
-    turnCount++;
-  console.log(turnCount);
     movementPhase();
 }
