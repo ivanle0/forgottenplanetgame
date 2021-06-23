@@ -1,0 +1,140 @@
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  display: flex;
+  flex-wrap: wrap;
+  width: 650px;  
+}
+
+.map-grid {
+  display: flex;
+  flex-wrap: wrap;
+  height: 270px;
+  width: 320px;  
+  padding: 0px;
+  position: relative;
+  background-color: blue;
+  justify-content: space-between;
+}
+
+.map-tile {
+  background-color: transparent;
+  width: 50px;
+  height: 50px;
+  perspective: 1000px;
+}
+
+.map-tile-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+.map-tile-is-flipped .map-tile-inner {
+  transform: rotateY(180deg);
+}
+
+.map-tile-front, .map-tile-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.map-tile-front {
+  background-color: #bbb;
+  color: black;
+}
+
+.map-tile-back {
+  background-color: #2980b9;
+  color: white;
+  transform: rotateY(180deg);
+}
+
+#player-token {
+  width: 25px;
+  height: 25px;
+  background-color: black;
+  position: absolute;
+  top: 77px;
+  left: 55px;
+  z-index: 2;
+  transition: transform 0.5s;
+}
+
+#player-token img {
+  width: 100%;
+  height: 100%;
+  border-radius: 45%;
+}
+
+.equipment-container {
+  display: flex;
+  flex-direction: row;
+  background-color: black;
+  width: 650px;
+  padding: 10px 10px 10px 10px;
+  align-items: center;
+  justify-content: space-between;
+  
+}
+
+.equipment-placeholder-green {  
+  background-color: green;
+  height: 100px;
+  width: 100px;
+}
+
+.equipment-placeholder-grey {  
+  background-color: grey;
+  height: 100px;
+  width: 100px;
+}
+
+.equipment-card {  
+  background-color: white;
+  height: 80%;
+  width: 80%;
+  margin: auto;
+  margin-top: 10%;
+  border-radius: 5%;
+  overflow: hidden;
+}
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  align-items: center;
+  justify-content: space-between
+}
+
+.message-button-container {
+  display: flex;
+  flex-direction: row;
+  width: 300px;
+  justify-content: space-between;
+}
+
+.message-button {
+  background-color: grey;
+  color: white;  
+  width: 80px;
+  margin: auto;
+  padding: 10px;
+  text-align: center;
+}
