@@ -379,6 +379,7 @@ function buildGameBoard() {
 }
 
 startGame();
+console.log("working")
 
 
 function findFuelTanks() {
